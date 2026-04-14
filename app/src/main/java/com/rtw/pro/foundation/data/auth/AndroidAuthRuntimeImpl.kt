@@ -1,5 +1,11 @@
 package com.rtw.pro.foundation.data.auth
 
+import com.google.android.gms.tasks.Tasks
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthException
+import com.google.firebase.auth.GoogleAuthProvider
+import java.util.concurrent.TimeUnit
+
 /**
  * Runtime-oriented implementation skeleton.
  * SDK binding should be added in TODO blocks.
@@ -54,27 +60,41 @@ class AndroidGoogleSignInBridgeImpl : AndroidGoogleSignInBridge {
 }
 
 class AndroidFirebaseAuthBridgeImpl : AndroidFirebaseAuthBridge {
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private var lastFirebaseErrorCode: String? = null
 
     override fun currentUid(): String? {
-        // TODO: Return FirebaseAuth.getInstance().currentUser?.uid
-        return null
+        return auth.currentUser?.uid
     }
 
     override fun currentAccessToken(): String? {
-        // TODO: Read current user token from Firebase SDK.
-        return null
+        val user = auth.currentUser ?: return null
+        return try {
+            val tokenTask = user.getIdToken(false)
+            Tasks.await(tokenTask, 5, TimeUnit.SECONDS)?.token
+        } catch (_: Exception) {
+            null
+        }
     }
 
     override fun signInWithGoogleIdToken(idToken: String): Boolean {
-        // TODO: Exchange Google ID token with Firebase credential sign-in.
-        // On failure, assign FirebaseAuthException.errorCode to lastFirebaseErrorCode.
-        lastFirebaseErrorCode = "ERROR_INVALID_CREDENTIAL"
-        return false
+        if (idToken.isBlank()) {
+            lastFirebaseErrorCode = "ERROR_INVALID_CREDENTIAL"
+            return false
+        }
+        return try {
+            val credential = GoogleAuthProvider.getCredential(idToken, null)
+            val task = auth.signInWithCredential(credential)
+            Tasks.await(task, 10, TimeUnit.SECONDS)
+            lastFirebaseErrorCode = null
+            task.isSuccessful
+        } catch (e: Exception) {
+            lastFirebaseErrorCode = extractFirebaseErrorCode(e)
+            false
+        }
     }
 
     override fun signInWithGoogleIdTokenResult(idToken: String): FirebaseSignInResult {
-        // TODO: Replace stub error assignment with real FirebaseAuthException.errorCode value.
         val success = signInWithGoogleIdToken(idToken)
         return if (success) {
             FirebaseSignInResult(success = true)
@@ -87,7 +107,18 @@ class AndroidFirebaseAuthBridgeImpl : AndroidFirebaseAuthBridge {
     }
 
     override fun signOut() {
-        // TODO: Sign out from Firebase session.
+        auth.signOut()
         lastFirebaseErrorCode = null
+    }
+
+    private fun extractFirebaseErrorCode(exception: Exception): String {
+        if (exception is FirebaseAuthException && !exception.errorCode.isNullOrBlank()) {
+            return exception.errorCode
+        }
+        val cause = exception.cause
+        if (cause is FirebaseAuthException && !cause.errorCode.isNullOrBlank()) {
+            return cause.errorCode
+        }
+        return "ERROR_UNKNOWN"
     }
 }
