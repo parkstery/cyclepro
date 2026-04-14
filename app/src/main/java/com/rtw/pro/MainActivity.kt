@@ -99,13 +99,25 @@ class MainActivity : AppCompatActivity() {
     private fun renderCurrentState() {
         val authConfigLooksReal = !BuildConfig.AUTH_WEB_CLIENT_ID.contains("TODO", ignoreCase = true) &&
             !BuildConfig.AUTH_FIREBASE_PROJECT_ID.contains("TODO", ignoreCase = true)
+        val integrationReadyForAuth = authConfigLooksReal && BuildConfig.HAS_GOOGLE_SERVICES_JSON
+        val webClientIdHint = BuildConfig.AUTH_WEB_CLIENT_ID.let { value ->
+            if (value.length <= 10) value else "${value.take(6)}...${value.takeLast(4)}"
+        }
+        val nextAction = when {
+            !BuildConfig.HAS_GOOGLE_SERVICES_JSON -> "Place app/google-services.json from Firebase console."
+            !authConfigLooksReal -> "Set rtw.auth.webClientId and rtw.auth.firebaseProjectId in local.properties."
+            else -> "Run Google Sign-In button and verify authReady=true."
+        }
         dashboardText.text = buildString {
             appendLine("Ride The World Pro")
             appendLine("Runtime status dashboard")
             appendLine("appVersion: ${BuildConfig.VERSION_NAME}(${BuildConfig.VERSION_CODE})")
             appendLine("buildGitSha: ${BuildConfig.BUILD_GIT_SHA}")
             appendLine()
+            appendLine("authIntegrationReady: $integrationReadyForAuth")
             appendLine("authConfigLooksReal: $authConfigLooksReal")
+            appendLine("authWebClientIdHint: $webClientIdHint")
+            appendLine("authFirebaseProjectId: ${BuildConfig.AUTH_FIREBASE_PROJECT_ID}")
             appendLine("googleServicesJsonPresent: ${BuildConfig.HAS_GOOGLE_SERVICES_JSON}")
             appendLine("authReady: ${currentState.authReady}")
             appendLine("authStatus: ${currentState.authStatus}")
@@ -121,6 +133,9 @@ class MainActivity : AppCompatActivity() {
             appendLine()
             appendLine("mapMessage:")
             appendLine(currentState.mapMessage.ifBlank { "(empty)" })
+            appendLine()
+            appendLine("nextAction:")
+            appendLine(nextAction)
             appendLine()
             appendLine("refreshTimeMs: ${System.currentTimeMillis()}")
         }
