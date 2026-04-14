@@ -27,6 +27,16 @@ class AuthRuntimeCoordinatorTest {
         assertEquals(AuthRuntimeStatus.READY_WITH_SESSION, result.status)
     }
 
+    @Test
+    fun initialize_returnsBlocked_whenConfigContainsTodoPlaceholders() {
+        val coordinator = AuthRuntimeCoordinator(
+            config = AuthProviderConfig("TODO_WEB_CLIENT_ID", "TODO_FIREBASE_PROJECT_ID"),
+            authGateway = fakeGateway(session = AuthSession("u1", "t1"))
+        )
+        val result = coordinator.initialize()
+        assertEquals(AuthRuntimeStatus.BLOCKED_BY_INVALID_CONFIG, result.status)
+    }
+
     private fun fakeGateway(
         session: AuthSession? = null
     ): AuthGateway = object : AuthGateway {

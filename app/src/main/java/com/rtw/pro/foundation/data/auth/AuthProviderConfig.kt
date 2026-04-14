@@ -5,7 +5,13 @@ data class AuthProviderConfig(
     val firebaseProjectId: String
 ) {
     fun isValid(): Boolean {
-        return googleWebClientId.isNotBlank() && firebaseProjectId.isNotBlank()
+        return googleWebClientId.isConfiguredValue() && firebaseProjectId.isConfiguredValue()
+    }
+
+    private fun String.isConfiguredValue(): Boolean {
+        val normalized = trim()
+        if (normalized.isBlank()) return false
+        return !normalized.uppercase().contains("TODO")
     }
 }
 
