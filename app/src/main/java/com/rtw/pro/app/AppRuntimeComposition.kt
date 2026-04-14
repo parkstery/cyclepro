@@ -1,6 +1,7 @@
 package com.rtw.pro.app
 
 import android.content.Context
+import android.content.Intent
 import com.rtw.pro.app.runtime.AppRuntimeOrchestrator
 import com.rtw.pro.app.runtime.MainAppStartupHandler
 import com.rtw.pro.app.runtime.PushTokenRefreshHandler
@@ -33,6 +34,10 @@ import com.rtw.pro.notification.data.FcmTokenSyncCoordinator
 object AppRuntimeComposition {
     private val googleSignInBridge by lazy { AndroidGoogleSignInBridgeImpl() }
     private val firebaseAuthBridge by lazy { AndroidFirebaseAuthBridgeImpl() }
+    private fun authConfig(): AuthProviderConfig = AuthProviderConfig(
+        googleWebClientId = "TODO_WEB_CLIENT_ID",
+        firebaseProjectId = "TODO_FIREBASE_PROJECT_ID"
+    )
 
     fun provideAuthGateway(): FirebaseAuthGateway {
         val googleClient = AndroidGoogleSignInClient(googleSignInBridge)
@@ -44,8 +49,19 @@ object AppRuntimeComposition {
         googleSignInBridge.onSignInResultToken(idToken)
     }
 
+    fun dispatchGoogleSignInActivityResult(data: Intent?) {
+        googleSignInBridge.onSignInResultFromIntent(data)
+    }
+
     fun dispatchGoogleSignInResultErrorStatus(statusCode: Int?) {
         googleSignInBridge.onSignInResultErrorStatus(statusCode)
+    }
+
+    fun launchGoogleSignInIntent(context: Context): Intent? {
+        return googleSignInBridge.launchSignInIntent(
+            context = context,
+            webClientId = authConfig().googleWebClientId
+        )
     }
 
     fun provideMapBinder(context: Context): AndroidMapRuntimeBinder {
@@ -84,10 +100,7 @@ object AppRuntimeComposition {
     fun provideAppRuntimeOrchestrator(context: Context): AppRuntimeOrchestrator {
         val authGateway = provideAuthGateway()
         val authCoordinator = AuthRuntimeCoordinator(
-            config = AuthProviderConfig(
-                googleWebClientId = "TODO_WEB_CLIENT_ID",
-                firebaseProjectId = "TODO_FIREBASE_PROJECT_ID"
-            ),
+            config = authConfig(),
             authGateway = authGateway
         )
         val mapBinder = provideMapBinder(context)

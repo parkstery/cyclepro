@@ -6,6 +6,7 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.result.contract.ActivityResultContracts
 import com.rtw.pro.app.AppRuntimeComposition
 import com.rtw.pro.app.runtime.RuntimeState
 
@@ -13,6 +14,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var dashboardText: TextView
     private val runtimeOrchestrator by lazy { AppRuntimeComposition.provideAppRuntimeOrchestrator(applicationContext) }
     private var currentState: RuntimeState = RuntimeState()
+    private val googleSignInLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        AppRuntimeComposition.dispatchGoogleSignInActivityResult(result.data)
+        renderRuntimeState()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,6 +39,17 @@ class MainActivity : AppCompatActivity() {
                 renderCurrentState()
             }
         }
+        val googleSignInButton = Button(this).apply {
+            text = "Google Sign-In (Interactive)"
+            setOnClickListener {
+                val intent = AppRuntimeComposition.launchGoogleSignInIntent(this@MainActivity)
+                if (intent != null) {
+                    googleSignInLauncher.launch(intent)
+                } else {
+                    renderCurrentState()
+                }
+            }
+        }
         val subscribeTopicButton = Button(this).apply {
             text = "Subscribe Topic: daily-20h"
             setOnClickListener {
@@ -44,6 +62,7 @@ class MainActivity : AppCompatActivity() {
             setPadding(32, 64, 32, 32)
             addView(refreshButton)
             addView(retryPushTokenButton)
+            addView(googleSignInButton)
             addView(subscribeTopicButton)
             addView(dashboardText)
         }

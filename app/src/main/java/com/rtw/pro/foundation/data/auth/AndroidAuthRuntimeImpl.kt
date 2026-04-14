@@ -1,5 +1,10 @@
 package com.rtw.pro.foundation.data.auth
 
+import android.content.Context
+import android.content.Intent
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
@@ -18,11 +23,38 @@ class AndroidGoogleSignInBridgeImpl : AndroidGoogleSignInBridge {
      */
     private var pendingToken: String? = null
     private var pendingError: GoogleSignInFailureCode? = null
+    private var googleSignInClient: com.google.android.gms.auth.api.signin.GoogleSignInClient? = null
 
     fun launchSignIn() {
         pendingToken = null
         pendingError = null
         // TODO: Launch Google sign-in intent using ActivityResultLauncher.
+    }
+
+    fun launchSignInIntent(context: Context, webClientId: String): Intent? {
+        pendingToken = null
+        pendingError = null
+        if (webClientId.isBlank()) {
+            pendingError = GoogleSignInFailureCode.UNKNOWN
+            return null
+        }
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(webClientId)
+            .requestEmail()
+            .build()
+        googleSignInClient = GoogleSignIn.getClient(context, gso)
+        return googleSignInClient?.signInIntent
+    }
+
+    fun onSignInResultFromIntent(data: Intent?) {
+        try {
+            val account = GoogleSignIn.getSignedInAccountFromIntent(data)
+                .getResult(ApiException::class.java)
+            onSignInResultToken(account?.idToken)
+        } catch (e: Exception) {
+            val statusCode = (e as? ApiException)?.statusCode
+            onSignInResultErrorStatus(statusCode)
+        }
     }
 
     fun onSignInResultToken(idToken: String?) {
@@ -53,7 +85,7 @@ class AndroidGoogleSignInBridgeImpl : AndroidGoogleSignInBridge {
     }
 
     override fun signOut() {
-        // TODO: Call Google sign-out API and revoke token if needed.
+        googleSignInClient?.signOut()
         pendingToken = null
         pendingError = null
     }
