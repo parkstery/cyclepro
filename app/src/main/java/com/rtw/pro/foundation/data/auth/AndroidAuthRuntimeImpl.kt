@@ -92,14 +92,22 @@ class AndroidGoogleSignInBridgeImpl : AndroidGoogleSignInBridge {
 }
 
 class AndroidFirebaseAuthBridgeImpl : AndroidFirebaseAuthBridge {
-    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+    private val authOrNull: FirebaseAuth? by lazy {
+        try {
+            FirebaseAuth.getInstance()
+        } catch (_: IllegalStateException) {
+            null
+        }
+    }
     private var lastFirebaseErrorCode: String? = null
 
     override fun currentUid(): String? {
+        val auth = authOrNull ?: return null
         return auth.currentUser?.uid
     }
 
     override fun currentAccessToken(): String? {
+        val auth = authOrNull ?: return null
         val user = auth.currentUser ?: return null
         return try {
             val tokenTask = user.getIdToken(false)
@@ -110,6 +118,11 @@ class AndroidFirebaseAuthBridgeImpl : AndroidFirebaseAuthBridge {
     }
 
     override fun signInWithGoogleIdToken(idToken: String): Boolean {
+        val auth = authOrNull
+        if (auth == null) {
+            lastFirebaseErrorCode = "ERROR_APP_NOT_CONFIGURED"
+            return false
+        }
         if (idToken.isBlank()) {
             lastFirebaseErrorCode = "ERROR_INVALID_CREDENTIAL"
             return false
@@ -139,6 +152,7 @@ class AndroidFirebaseAuthBridgeImpl : AndroidFirebaseAuthBridge {
     }
 
     override fun signOut() {
+        val auth = authOrNull ?: return
         auth.signOut()
         lastFirebaseErrorCode = null
     }
