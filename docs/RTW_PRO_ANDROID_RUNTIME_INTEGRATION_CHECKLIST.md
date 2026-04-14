@@ -8,8 +8,8 @@
 - Android 실제 SDK 연동 작업의 완료 조건을 체크리스트로 관리한다.
 
 ## Auth (Google + Firebase)
-- [ ] Google Sign-In Activity result에서 ID token 수신
-- [ ] Firebase credential sign-in 성공/실패 분기 처리
+- [x] Google Sign-In Activity result에서 ID token 수신
+- [x] Firebase credential sign-in 성공/실패 분기 처리
 - [ ] 토큰 만료/재로그인 경로 검증
 - [x] signOut 시 Google/Firebase 세션 정리 경계 정의(`signOutAll`)
 - [x] 실패 코드 매핑 구조 정의(`GoogleSignInFailureCode`, `FirebaseSignInErrorCode`)
@@ -18,9 +18,9 @@
 - [x] AuthError -> UI 메시지 정책 분리(`AuthUiMessagePolicy`)
 
 ## Push (FCM)
-- [ ] 앱 시작 시 FCM token 동기화
-- [ ] token refresh 콜백 시 재등록
-- [ ] 정기 이벤트 topic subscribe/unsubscribe
+- [x] 앱 시작 시 FCM token 동기화
+- [x] token refresh 콜백 시 재등록
+- [x] 정기 이벤트 topic subscribe/unsubscribe
 - [x] 전송 실패 코드 기반 token 등록 결과 매핑(`registerDetailed`, `FcmTokenBackendClient`)
 - [x] FCM HTTP 상태 코드 -> 내부 에러 코드 매핑(`FcmErrorMapper`)
 - [x] Push 에러 코드 -> UI 메시지 정책(`PushUiMessagePolicy`)
@@ -28,7 +28,7 @@
 
 ## Map / StreetView
 - [ ] Maps API key 주입/초기화 검증
-- [ ] 위치 권한 거부/허용 분기 처리
+- [x] 위치 권한 거부/허용 분기 처리
 - [ ] StreetView timeout 정책 적용
 - [ ] 미커버리지 시 MAP_ONLY 폴백 연동
 - [x] Map bind reason -> 내부 에러 코드 매핑(`MapBindErrorMapper`)
@@ -39,6 +39,12 @@
 - [ ] 로그인 -> 홈 진입 -> 지도 초기화 E2E 통과
 - [ ] 레이스 종료 후 알림 구독/발송 경로 smoke test 통과
 - [ ] 장애 시 폴백 메시지/상태 전이 확인
+
+## 실연동 마감 전제조건 (Local)
+- [ ] `app/google-services.json` 배치
+- [ ] `local.properties`에 `rtw.auth.webClientId`, `rtw.auth.firebaseProjectId` 실값 입력
+- [x] 대시보드에서 설정 진단 항목 노출 (`authConfigLooksReal`, `googleServicesJsonPresent`)
+- [x] 대시보드에 빌드 식별자 노출 (`buildGitSha`)
 
 ## 앱 조립(Composition) 확인
 - [x] `AppRuntimeComposition`에 Auth/Map/Push 조립 경로 정의

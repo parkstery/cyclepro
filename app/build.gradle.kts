@@ -1,4 +1,5 @@
 import java.util.Properties
+import java.io.ByteArrayOutputStream
 
 plugins {
     id("com.android.application")
@@ -18,6 +19,14 @@ val localProps = Properties().apply {
 val authWebClientId = localProps.getProperty("rtw.auth.webClientId", "TODO_WEB_CLIENT_ID")
 val authFirebaseProjectId = localProps.getProperty("rtw.auth.firebaseProjectId", "TODO_FIREBASE_PROJECT_ID")
 val hasGoogleServicesJson = file("google-services.json").exists()
+val buildGitSha = runCatching {
+    val stdout = ByteArrayOutputStream()
+    exec {
+        commandLine("git", "rev-parse", "--short", "HEAD")
+        standardOutput = stdout
+    }
+    stdout.toString().trim()
+}.getOrDefault("unknown")
 
 android {
     namespace = "com.rtw.pro"
@@ -34,6 +43,7 @@ android {
         buildConfigField("String", "AUTH_WEB_CLIENT_ID", "\"$authWebClientId\"")
         buildConfigField("String", "AUTH_FIREBASE_PROJECT_ID", "\"$authFirebaseProjectId\"")
         buildConfigField("boolean", "HAS_GOOGLE_SERVICES_JSON", hasGoogleServicesJson.toString())
+        buildConfigField("String", "BUILD_GIT_SHA", "\"$buildGitSha\"")
     }
 
     buildTypes {

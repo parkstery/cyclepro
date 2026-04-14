@@ -102,6 +102,8 @@ class MainActivity : AppCompatActivity() {
         dashboardText.text = buildString {
             appendLine("Ride The World Pro")
             appendLine("Runtime status dashboard")
+            appendLine("appVersion: ${BuildConfig.VERSION_NAME}(${BuildConfig.VERSION_CODE})")
+            appendLine("buildGitSha: ${BuildConfig.BUILD_GIT_SHA}")
             appendLine()
             appendLine("authConfigLooksReal: $authConfigLooksReal")
             appendLine("googleServicesJsonPresent: ${BuildConfig.HAS_GOOGLE_SERVICES_JSON}")
