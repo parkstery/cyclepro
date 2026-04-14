@@ -7,7 +7,8 @@ enum class AuthRuntimeStatus {
     READY_WITH_SESSION,
     READY_AFTER_SIGN_IN,
     BLOCKED_BY_INVALID_CONFIG,
-    FAILED_SIGN_IN
+    FAILED_SIGN_IN,
+    SIGNED_OUT
 }
 
 data class AuthRuntimeResult(
@@ -43,5 +44,32 @@ class AuthRuntimeCoordinator(
                 message = "Auth sign-in failed"
             )
         }
+    }
+
+    fun retrySignIn(): AuthRuntimeResult {
+        if (!config.isValid()) {
+            return AuthRuntimeResult(
+                status = AuthRuntimeStatus.BLOCKED_BY_INVALID_CONFIG,
+                message = "Auth provider config is invalid"
+            )
+        }
+        return when (authGateway.signInWithGoogle()) {
+            is AuthResult.Success -> AuthRuntimeResult(
+                status = AuthRuntimeStatus.READY_AFTER_SIGN_IN,
+                message = "Auth ready after retry sign-in"
+            )
+            is AuthResult.Failure -> AuthRuntimeResult(
+                status = AuthRuntimeStatus.FAILED_SIGN_IN,
+                message = "Auth retry sign-in failed"
+            )
+        }
+    }
+
+    fun signOut(): AuthRuntimeResult {
+        authGateway.signOut()
+        return AuthRuntimeResult(
+            status = AuthRuntimeStatus.SIGNED_OUT,
+            message = "Auth signed out"
+        )
     }
 }

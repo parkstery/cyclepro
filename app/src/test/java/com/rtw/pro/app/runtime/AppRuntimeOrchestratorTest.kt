@@ -73,4 +73,57 @@ class AppRuntimeOrchestratorTest {
         assertTrue(state.pushTokenSynced)
         assertEquals("지도가 정상 준비되었습니다.", state.mapMessage)
     }
+
+    @Test
+    fun signOutAuth_updatesAuthStateToSignedOut() {
+        val authCoordinator = AuthRuntimeCoordinator(
+            config = AuthProviderConfig("web", "project"),
+            authGateway = object : AuthGateway {
+                override fun getCurrentSession(): AuthSession? = AuthSession("u1", "t1")
+                override fun signInWithGoogle(): AuthResult = AuthResult.Success(AuthSession("u2", "t2"))
+                override fun signOut() = Unit
+            }
+        )
+        val mapRuntime = MapRuntimeOrchestrator(
+            AndroidMapRuntimeBinder(
+                permissionGateway = object : MapPermissionGateway {
+                    override fun locationPermissionState(): MapPermissionState = MapPermissionState.GRANTED
+                },
+                mapGateway = object : GoogleMapSdkGateway {
+                    override fun initialize(apiKey: String): Boolean = true
+                },
+                streetViewGateway = object : StreetViewSdkGateway {
+                    override fun initialize(timeoutMs: Long): Boolean = true
+                }
+            )
+        )
+        val tokenSync = FcmTokenSyncCoordinator(
+            provider = object : FcmTokenProvider {
+                override fun currentToken(): String? = "token-1"
+            },
+            registrar = object : FcmTokenRegistrar {
+                override fun register(token: String): Boolean = true
+            }
+        )
+        val orchestrator = AppRuntimeOrchestrator(
+            authCoordinator = authCoordinator,
+            mapRuntimeOrchestrator = mapRuntime,
+            tokenSyncCoordinator = tokenSync,
+            topicSubscriptionManager = FcmTopicSubscriptionManager(
+                object : FcmSubscriptionClient {
+                    override fun subscribe(topic: String): Boolean = true
+                    override fun unsubscribe(topic: String): Boolean = true
+                }
+            ),
+            stateStore = RuntimeStateStore()
+        )
+
+        orchestrator.onAppLaunch(
+            mapConfig = MapProviderConfig("map-key", true),
+            streetViewConfig = StreetViewProviderConfig(6000L, true)
+        )
+        val signedOut = orchestrator.signOutAuth()
+        assertEquals("SIGNED_OUT", signedOut.authStatus)
+        assertTrue(!signedOut.authReady)
+    }
 }

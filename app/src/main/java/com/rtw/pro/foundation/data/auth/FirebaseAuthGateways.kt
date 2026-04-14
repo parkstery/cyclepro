@@ -64,4 +64,8 @@ class FirebaseAuthGateway(
         firebaseAuthClient.signOut()
         googleSignInClient.signOut()
     }
+
+    override fun signOut() {
+        signOutAll()
+    }
 }

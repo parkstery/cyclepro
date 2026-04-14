@@ -39,6 +39,20 @@ class MainActivity : AppCompatActivity() {
                 renderCurrentState()
             }
         }
+        val retryAuthButton = Button(this).apply {
+            text = "Retry Auth Sign-In"
+            setOnClickListener {
+                currentState = runtimeOrchestrator.retryAuthSignIn()
+                renderCurrentState()
+            }
+        }
+        val signOutButton = Button(this).apply {
+            text = "Sign Out Auth"
+            setOnClickListener {
+                currentState = runtimeOrchestrator.signOutAuth()
+                renderCurrentState()
+            }
+        }
         val googleSignInButton = Button(this).apply {
             text = "Google Sign-In (Interactive)"
             setOnClickListener {
@@ -62,6 +76,8 @@ class MainActivity : AppCompatActivity() {
             setPadding(32, 64, 32, 32)
             addView(refreshButton)
             addView(retryPushTokenButton)
+            addView(retryAuthButton)
+            addView(signOutButton)
             addView(googleSignInButton)
             addView(subscribeTopicButton)
             addView(dashboardText)

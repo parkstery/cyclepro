@@ -21,6 +21,7 @@ sealed class AuthResult {
 interface AuthGateway {
     fun getCurrentSession(): AuthSession?
     fun signInWithGoogle(): AuthResult
+    fun signOut() {}
 }
 
 interface UserProfileGateway {

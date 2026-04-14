@@ -15,18 +15,22 @@ class AppRuntimeOrchestrator(
     private val topicSubscriptionManager: FcmTopicSubscriptionManager,
     private val stateStore: RuntimeStateStore
 ) {
+    private fun updateAuthState(status: AuthRuntimeStatus, message: String) {
+        val authReady = status == AuthRuntimeStatus.READY_WITH_SESSION ||
+            status == AuthRuntimeStatus.READY_AFTER_SIGN_IN
+        stateStore.updateAuthReady(authReady)
+        stateStore.updateAuthUi(
+            status = status.name,
+            message = message
+        )
+    }
+
     fun onAppLaunch(
         mapConfig: MapProviderConfig,
         streetViewConfig: StreetViewProviderConfig
     ): RuntimeState {
         val auth = authCoordinator.initialize()
-        val authReady = auth.status == AuthRuntimeStatus.READY_WITH_SESSION ||
-            auth.status == AuthRuntimeStatus.READY_AFTER_SIGN_IN
-        stateStore.updateAuthReady(authReady)
-        stateStore.updateAuthUi(
-            status = auth.status.name,
-            message = auth.message
-        )
+        updateAuthState(auth.status, auth.message)
 
         val map = mapRuntimeOrchestrator.prepare(mapConfig, streetViewConfig)
         stateStore.updateMapReady(map.ready)
@@ -42,6 +46,18 @@ class AppRuntimeOrchestrator(
             errorCode = push.errorCode
         )
 
+        return stateStore.get()
+    }
+
+    fun retryAuthSignIn(): RuntimeState {
+        val auth = authCoordinator.retrySignIn()
+        updateAuthState(auth.status, auth.message)
+        return stateStore.get()
+    }
+
+    fun signOutAuth(): RuntimeState {
+        val auth = authCoordinator.signOut()
+        updateAuthState(auth.status, auth.message)
         return stateStore.get()
     }
 
