@@ -43,8 +43,10 @@
 ## 실연동 마감 전제조건 (Local)
 - [ ] `app/google-services.json` 배치
 - [ ] `local.properties`에 `rtw.auth.webClientId`, `rtw.auth.firebaseProjectId` 실값 입력
+- [ ] `local.properties`에 `rtw.map.apiKey` 실값 입력
 - [x] 대시보드에서 설정 진단 항목 노출 (`authConfigLooksReal`, `googleServicesJsonPresent`)
 - [x] 대시보드에 빌드 식별자 노출 (`buildGitSha`)
+- [x] Gradle 프리플라이트 점검 태스크 제공 (`:app:printRuntimeIntegrationStatus`)
 
 ## 앱 조립(Composition) 확인
 - [x] `AppRuntimeComposition`에 Auth/Map/Push 조립 경로 정의

@@ -86,3 +86,32 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
 }
+
+tasks.register("printRuntimeIntegrationStatus") {
+    group = "verification"
+    description = "Print runtime integration readiness and blockers"
+    doLast {
+        val authConfigured = !authWebClientId.contains("TODO", ignoreCase = true) &&
+            !authFirebaseProjectId.contains("TODO", ignoreCase = true) &&
+            authWebClientId.isNotBlank() &&
+            authFirebaseProjectId.isNotBlank()
+        val mapConfigured = !mapApiKey.contains("TODO", ignoreCase = true) && mapApiKey.isNotBlank()
+        val blockers = mutableListOf<String>()
+        if (!hasGoogleServicesJson) blockers += "missing app/google-services.json"
+        if (!authConfigured) blockers += "auth config placeholder (rtw.auth.webClientId / rtw.auth.firebaseProjectId)"
+        if (!mapConfigured) blockers += "map api key placeholder (rtw.map.apiKey)"
+
+        println("=== RTW Runtime Integration Status ===")
+        println("googleServicesJsonPresent: $hasGoogleServicesJson")
+        println("authConfigured: $authConfigured")
+        println("mapApiKeyConfigured: $mapConfigured")
+        if (blockers.isEmpty()) {
+            println("integrationGatePassed: true")
+            println("blockers: (none)")
+        } else {
+            println("integrationGatePassed: false")
+            println("blockers:")
+            blockers.forEach { println(" - $it") }
+        }
+    }
+}
