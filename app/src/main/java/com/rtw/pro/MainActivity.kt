@@ -118,6 +118,8 @@ class MainActivity : AppCompatActivity() {
         val authConfigLooksReal = !BuildConfig.AUTH_WEB_CLIENT_ID.contains("TODO", ignoreCase = true) &&
             !BuildConfig.AUTH_FIREBASE_PROJECT_ID.contains("TODO", ignoreCase = true)
         val integrationReadyForAuth = authConfigLooksReal && BuildConfig.HAS_GOOGLE_SERVICES_JSON
+        val mapApiKeyConfigured = !BuildConfig.MAPS_API_KEY.contains("TODO", ignoreCase = true) &&
+            BuildConfig.MAPS_API_KEY.isNotBlank()
         val webClientIdHint = BuildConfig.AUTH_WEB_CLIENT_ID.let { value ->
             if (value.length <= 10) value else "${value.take(6)}...${value.takeLast(4)}"
         }
@@ -145,6 +147,7 @@ class MainActivity : AppCompatActivity() {
             appendLine("authWebClientIdHint: $webClientIdHint")
             appendLine("authFirebaseProjectId: ${BuildConfig.AUTH_FIREBASE_PROJECT_ID}")
             appendLine("googleServicesJsonPresent: ${BuildConfig.HAS_GOOGLE_SERVICES_JSON}")
+            appendLine("mapApiKeyConfigured: $mapApiKeyConfigured")
             appendLine("authReady: ${currentState.authReady}")
             appendLine("authStatus: ${currentState.authStatus}")
             appendLine("authMessage: ${currentState.authMessage.ifBlank { "(empty)" }}")

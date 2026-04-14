@@ -118,7 +118,7 @@ object AppRuntimeComposition {
     }
 
     fun defaultMapConfig(): MapProviderConfig = MapProviderConfig(
-        mapsApiKey = "TODO_MAPS_API_KEY",
+        mapsApiKey = BuildConfig.MAPS_API_KEY,
         streetViewEnabled = true
     )
 

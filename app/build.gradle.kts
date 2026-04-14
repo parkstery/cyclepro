@@ -18,6 +18,7 @@ val localProps = Properties().apply {
 }
 val authWebClientId = localProps.getProperty("rtw.auth.webClientId", "TODO_WEB_CLIENT_ID")
 val authFirebaseProjectId = localProps.getProperty("rtw.auth.firebaseProjectId", "TODO_FIREBASE_PROJECT_ID")
+val mapApiKey = localProps.getProperty("rtw.map.apiKey", "TODO_MAPS_API_KEY")
 val hasGoogleServicesJson = file("google-services.json").exists()
 val buildGitSha = runCatching {
     val stdout = ByteArrayOutputStream()
@@ -42,6 +43,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "AUTH_WEB_CLIENT_ID", "\"$authWebClientId\"")
         buildConfigField("String", "AUTH_FIREBASE_PROJECT_ID", "\"$authFirebaseProjectId\"")
+        buildConfigField("String", "MAPS_API_KEY", "\"$mapApiKey\"")
         buildConfigField("boolean", "HAS_GOOGLE_SERVICES_JSON", hasGoogleServicesJson.toString())
         buildConfigField("String", "BUILD_GIT_SHA", "\"$buildGitSha\"")
     }
