@@ -7,6 +7,7 @@ import android.widget.ScrollView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.result.contract.ActivityResultContracts
+import android.Manifest
 import com.rtw.pro.BuildConfig
 import com.rtw.pro.app.AppRuntimeComposition
 import com.rtw.pro.app.runtime.RuntimeState
@@ -19,6 +20,11 @@ class MainActivity : AppCompatActivity() {
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         AppRuntimeComposition.dispatchGoogleSignInActivityResult(result.data)
+        renderRuntimeState()
+    }
+    private val locationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) {
         renderRuntimeState()
     }
 
@@ -72,6 +78,17 @@ class MainActivity : AppCompatActivity() {
                 renderCurrentState()
             }
         }
+        val requestLocationPermissionButton = Button(this).apply {
+            text = "Request Location Permission"
+            setOnClickListener {
+                locationPermissionLauncher.launch(
+                    arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    )
+                )
+            }
+        }
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(32, 64, 32, 32)
@@ -81,6 +98,7 @@ class MainActivity : AppCompatActivity() {
             addView(signOutButton)
             addView(googleSignInButton)
             addView(subscribeTopicButton)
+            addView(requestLocationPermissionButton)
             addView(dashboardText)
         }
         setContentView(ScrollView(this).apply { addView(layout) })
@@ -106,6 +124,8 @@ class MainActivity : AppCompatActivity() {
         val nextAction = when {
             !BuildConfig.HAS_GOOGLE_SERVICES_JSON -> "Place app/google-services.json from Firebase console."
             !authConfigLooksReal -> "Set rtw.auth.webClientId and rtw.auth.firebaseProjectId in local.properties."
+            currentState.mapErrorCode?.name == "LOCATION_PERMISSION_DENIED" ->
+                "Tap Request Location Permission and allow access."
             else -> "Run Google Sign-In button and verify authReady=true."
         }
         dashboardText.text = buildString {
