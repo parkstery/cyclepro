@@ -18,3 +18,4 @@
 ## 규칙
 - 주행 중 텍스트 길이는 최소화한다.
 - CORE 항목은 한 손 조작 없이 인지 가능해야 한다.
+- 구현 기준: `HudCoreData`, `HudAuxData`, `HudStateBuilder`

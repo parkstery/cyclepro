@@ -18,3 +18,4 @@
 
 ## 게이트
 - 필수 항목 Fail 0건일 때만 L1-03(Room Race) 구현 단계로 진입
+- 게이트 판정은 `BaselineQaGate` 기준으로 required=true 항목 Fail 여부를 평가한다.

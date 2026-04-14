@@ -1,0 +1,108 @@
+package com.rtw.pro.app
+
+import com.rtw.pro.app.runtime.AppRuntimeOrchestrator
+import com.rtw.pro.app.runtime.MainAppStartupHandler
+import com.rtw.pro.app.runtime.PushTokenRefreshHandler
+import com.rtw.pro.app.runtime.RuntimeStateStore
+import com.rtw.pro.foundation.data.auth.AndroidFirebaseAuthBridgeImpl
+import com.rtw.pro.foundation.data.auth.AndroidFirebaseAuthClient
+import com.rtw.pro.foundation.data.auth.AndroidGoogleSignInBridgeImpl
+import com.rtw.pro.foundation.data.auth.AndroidGoogleSignInClient
+import com.rtw.pro.foundation.data.auth.AuthProviderConfig
+import com.rtw.pro.foundation.data.auth.AuthRuntimeCoordinator
+import com.rtw.pro.foundation.data.auth.FirebaseAuthGateway
+import com.rtw.pro.map.data.AndroidMapRuntimeBinder
+import com.rtw.pro.map.data.GoogleMapSdkGatewayImpl
+import com.rtw.pro.map.data.MapProviderConfig
+import com.rtw.pro.map.data.MapPermissionGatewayImpl
+import com.rtw.pro.map.data.StreetViewSdkGatewayImpl
+import com.rtw.pro.map.data.StreetViewProviderConfig
+import com.rtw.pro.map.domain.MapRuntimeOrchestrator
+import com.rtw.pro.notification.data.FcmPushNotifier
+import com.rtw.pro.notification.data.FcmSubscriptionClientImpl
+import com.rtw.pro.notification.data.FcmTopicSubscriptionManager
+import com.rtw.pro.notification.data.FcmTokenProviderImpl
+import com.rtw.pro.notification.data.FcmTokenRegistrarImpl
+import com.rtw.pro.notification.data.FcmTokenSyncCoordinator
+
+/**
+ * App-level composition skeleton.
+ * Replace TODO clients with real Android SDK implementations.
+ */
+object AppRuntimeComposition {
+    fun provideAuthGateway(): FirebaseAuthGateway {
+        val googleClient = AndroidGoogleSignInClient(AndroidGoogleSignInBridgeImpl())
+        val firebaseClient = AndroidFirebaseAuthClient(AndroidFirebaseAuthBridgeImpl())
+        return FirebaseAuthGateway(firebaseClient, googleClient)
+    }
+
+    fun provideMapBinder(): AndroidMapRuntimeBinder {
+        return AndroidMapRuntimeBinder(
+            permissionGateway = MapPermissionGatewayImpl(),
+            mapGateway = GoogleMapSdkGatewayImpl(),
+            streetViewGateway = StreetViewSdkGatewayImpl()
+        )
+    }
+
+    fun provideMapRuntimeOrchestrator(): MapRuntimeOrchestrator {
+        return MapRuntimeOrchestrator(provideMapBinder())
+    }
+
+    fun provideTokenSyncCoordinator(): FcmTokenSyncCoordinator {
+        return FcmTokenSyncCoordinator(
+            provider = FcmTokenProviderImpl(),
+            registrar = FcmTokenRegistrarImpl()
+        )
+    }
+
+    fun provideTopicSubscriptionManager(): FcmTopicSubscriptionManager {
+        return FcmTopicSubscriptionManager(FcmSubscriptionClientImpl())
+    }
+
+    fun providePushNotifier(): FcmPushNotifier {
+        val client = object : com.rtw.pro.notification.data.FcmClient {
+            override fun sendToTopic(topic: String, title: String, body: String): Boolean {
+                // TODO: Replace with HTTP v1 FCM send implementation.
+                return false
+            }
+        }
+        return FcmPushNotifier(client)
+    }
+
+    fun provideAppRuntimeOrchestrator(): AppRuntimeOrchestrator {
+        val authGateway = provideAuthGateway()
+        val authCoordinator = AuthRuntimeCoordinator(
+            config = AuthProviderConfig(
+                googleWebClientId = "TODO_WEB_CLIENT_ID",
+                firebaseProjectId = "TODO_FIREBASE_PROJECT_ID"
+            ),
+            authGateway = authGateway
+        )
+        val mapBinder = provideMapBinder()
+        val tokenSync = provideTokenSyncCoordinator()
+        return AppRuntimeOrchestrator(
+            authCoordinator = authCoordinator,
+            mapBinder = mapBinder,
+            tokenSyncCoordinator = tokenSync,
+            stateStore = RuntimeStateStore()
+        )
+    }
+
+    fun defaultMapConfig(): MapProviderConfig = MapProviderConfig(
+        mapsApiKey = "TODO_MAPS_API_KEY",
+        streetViewEnabled = true
+    )
+
+    fun defaultStreetViewConfig(): StreetViewProviderConfig = StreetViewProviderConfig(
+        timeoutMs = 6000L,
+        fallbackToMapOnly = true
+    )
+
+    fun provideMainAppStartupHandler(): MainAppStartupHandler {
+        return MainAppStartupHandler(provideAppRuntimeOrchestrator())
+    }
+
+    fun providePushTokenRefreshHandler(): PushTokenRefreshHandler {
+        return PushTokenRefreshHandler(provideAppRuntimeOrchestrator())
+    }
+}

@@ -2,7 +2,7 @@
 
 ## Navigation
 - 상위: `RTW_PRO_L0_MASTER_PLAN.md`
-- 하위: `RTW_PRO_L2_06_01_KPI_DASHBOARD.md`, `RTW_PRO_L2_06_02_INCIDENT_RUNBOOK.md`, `RTW_PRO_L2_06_03_GONOGO_CRITERIA.md`, `RTW_PRO_L2_06_04_RETENTION_EXPERIMENTS.md`
+- 하위: `RTW_PRO_L2_06_01_KPI_DASHBOARD.md`, `RTW_PRO_L2_06_02_INCIDENT_RUNBOOK.md`, `RTW_PRO_L2_06_03_GONOGO_CRITERIA.md`, `RTW_PRO_L2_06_04_RETENTION_EXPERIMENTS.md`, `RTW_PRO_L2_06_05_WEEKLY_BETA_REPORT_TEMPLATE.md`
 
 ## 베타 운영 시나리오
 - 소규모 클로즈드 베타(10~30명)부터 시작
@@ -38,3 +38,9 @@
 ## 운영 보강 원칙
 - 센서 보유/미보유 그룹을 분리 집계해 공정성 지표를 별도 추적한다.
 - 재참여율 개선은 기능 추가보다 운영 실험(이벤트 시간/알림/결과 공유 카드)으로 먼저 검증한다.
+
+## 실행 체크리스트
+- [x] B6-01 Go/No-Go KPI 임계치/2주 판정 로직 코드화
+- [x] B6-02 인시던트 우선순위(P0/P1/P2) 대응 규칙 코드화
+- [x] B6-03 KPI 대시보드 세그먼트/미달 액션 기록 규칙 명시
+- [x] B6-04 베타 주간 리포트 템플릿 및 자동 집계 파이프라인 연결

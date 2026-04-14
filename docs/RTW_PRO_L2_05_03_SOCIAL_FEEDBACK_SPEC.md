@@ -16,3 +16,4 @@
 ## 규칙
 - 이벤트 노출은 짧고 명확하게 표시한다.
 - 중요한 이벤트는 진동/사운드 옵션을 제공한다.
+- 구현 기준: `SocialEventType`, `SocialEventFormatter`, `SocialFeedbackOptions`

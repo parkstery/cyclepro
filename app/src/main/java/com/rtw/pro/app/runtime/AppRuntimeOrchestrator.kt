@@ -1,0 +1,40 @@
+package com.rtw.pro.app.runtime
+
+import com.rtw.pro.foundation.data.auth.AuthRuntimeCoordinator
+import com.rtw.pro.foundation.data.auth.AuthRuntimeStatus
+import com.rtw.pro.map.data.AndroidMapRuntimeBinder
+import com.rtw.pro.map.data.MapProviderConfig
+import com.rtw.pro.map.data.StreetViewProviderConfig
+import com.rtw.pro.notification.data.FcmTokenSyncCoordinator
+
+class AppRuntimeOrchestrator(
+    private val authCoordinator: AuthRuntimeCoordinator,
+    private val mapBinder: AndroidMapRuntimeBinder,
+    private val tokenSyncCoordinator: FcmTokenSyncCoordinator,
+    private val stateStore: RuntimeStateStore
+) {
+    fun onAppLaunch(
+        mapConfig: MapProviderConfig,
+        streetViewConfig: StreetViewProviderConfig
+    ): RuntimeState {
+        val auth = authCoordinator.initialize()
+        stateStore.updateAuthReady(
+            auth.status == AuthRuntimeStatus.READY_WITH_SESSION ||
+                auth.status == AuthRuntimeStatus.READY_AFTER_SIGN_IN
+        )
+
+        val map = mapBinder.bind(mapConfig, streetViewConfig)
+        stateStore.updateMapReady(map.ready)
+
+        val push = tokenSyncCoordinator.syncCurrentToken()
+        stateStore.updatePushTokenSynced(push.success)
+
+        return stateStore.get()
+    }
+
+    fun onFcmTokenRefreshed(newToken: String): RuntimeState {
+        val result = tokenSyncCoordinator.onTokenRefreshed(newToken)
+        stateStore.updatePushTokenSynced(result.success)
+        return stateStore.get()
+    }
+}

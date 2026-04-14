@@ -13,3 +13,7 @@
 - P0: 즉시 핫픽스 및 공지
 - P1: 주간 패치
 - P2: 다음 스프린트 반영
+
+## 구현 기준
+- 우선순위 모델: `IncidentPriority`
+- 대응 매핑: `IncidentRunbook.actionFor()`

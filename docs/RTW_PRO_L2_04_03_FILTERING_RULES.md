@@ -12,3 +12,4 @@
 - 최근 N샘플 이동평균을 적용한다.
 - 무수신 구간은 속도 감쇠 후 0 처리한다.
 - 비정상 최대값은 무시한다.
+- 구현 기준: `SensorSignalFilter`, `FilteringRules`

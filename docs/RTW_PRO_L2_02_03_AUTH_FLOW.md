@@ -13,6 +13,11 @@
 3. 성공 시 프로필 업서트 후 홈 진입
 4. 실패/만료 시 재로그인 유도
 
+## 구현 경계
+- 인증 연동 경계: `AuthGateway`
+- 프로필 저장 경계: `UserProfileGateway`
+- 오케스트레이션 유스케이스: `EnsureSignedInUseCase`
+
 ## QA 체크리스트
 - [ ] 첫 로그인
 - [ ] 자동 로그인

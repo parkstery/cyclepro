@@ -26,6 +26,9 @@
 - L1-06 Beta Release
 - L1-07 External Services Report
 
+## 운영 요약 문서
+- `RTW_PRO_RELEASE_READINESS_SUMMARY.md`
+
 ## 운영 원칙
 - 문서 변경 순서: `L0 -> L1 -> L2`
 - 기능 추가 시 MVP/후순위(R&D) 분리 유지

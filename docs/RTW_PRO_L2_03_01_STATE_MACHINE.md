@@ -14,6 +14,7 @@
 - host start 이벤트로 countdown 진입
 - server startAt 도달 시 running 진입
 - 완주/종료 조건 만족 시 ended 전이
+- 구현 기준: `RoomRaceStateMachine`에서 상태 전이 가드 강제
 
 ## 예외
 - 연결 끊김: reconnecting 서브 상태 처리

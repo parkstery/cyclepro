@@ -2,7 +2,7 @@
 
 ## Navigation
 - 상위: `RTW_PRO_L0_MASTER_PLAN.md`
-- 하위: `RTW_PRO_L2_07_01_EXTERNAL_SERVICE_INVENTORY.md`
+- 하위: `RTW_PRO_L2_07_01_EXTERNAL_SERVICE_INVENTORY.md`, `RTW_PRO_L2_07_02_PROVIDER_DECISION_LOG.md`
 
 ## 목적
 - 계획서에 명시된 앱 연계 외부 서비스를 운영/개발 관점에서 한 번에 확인할 수 있도록 정리한다.
@@ -41,3 +41,9 @@
 ## 완료 기준
 - 외부 서비스 목록/역할/리스크/운영 방안이 한 문서에서 확인 가능하다.
 - 상세 항목은 `L2-07-01` 인벤토리와 일치한다.
+
+## 실행 체크리스트
+- [x] E7-01 외부 서비스 인벤토리 역할/리스크/폴백 정의
+- [x] E7-02 외부 서비스별 코드 경계(Port/Service/Coordinator) 매핑
+- [x] E7-03 베타 KPI/주간 리포트와 외부 서비스 장애 영향 연계
+- [x] E7-04 미확정 제공자(Map SDK/StreetView/Push) 확정 의사결정 기록

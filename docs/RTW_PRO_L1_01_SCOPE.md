@@ -2,7 +2,7 @@
 
 ## Navigation
 - 상위: `RTW_PRO_L0_MASTER_PLAN.md`
-- 하위: `RTW_PRO_L2_01_01_MVP_CHECKLIST.md`, `RTW_PRO_L2_01_02_NFR_TARGETS.md`, `RTW_PRO_L2_01_03_RND_BACKLOG.md`, `RTW_PRO_L2_01_04_PRO_VALUE_KPI.md`
+- 하위: `RTW_PRO_L2_01_01_MVP_CHECKLIST.md`, `RTW_PRO_L2_01_02_NFR_TARGETS.md`, `RTW_PRO_L2_01_03_RND_BACKLOG.md`, `RTW_PRO_L2_01_04_PRO_VALUE_KPI.md`, `RTW_PRO_L2_01_05_SCOPE_CHANGE_LOG.md`
 
 ## 목적
 - Pro 1차 출시 범위를 고정하고, 후순위 R&D를 명확히 분리한다.
@@ -38,3 +38,19 @@
 - MVP 체크리스트가 확정되고 기능 추가 요청은 Change Log에만 반영한다.
 - 제외 항목이 R&D 목록으로 분리되어 백로그에 등록된다.
 - Pro 가치 KPI가 대시보드/베타 판단 기준과 연결된다.
+
+## 실행 단계 (순차 진행)
+### Step 1. Scope Lock
+- MVP/제외 범위를 기능 단위로 잠그고 소유자/검증 근거를 명시한다.
+
+### Step 2. NFR Lock
+- 안정성/지연/성공률 수치를 단일 기준으로 통일한다.
+
+### Step 3. Change Control
+- 신규 요구사항은 Scope Change Log 등록 후 승인 시점까지 본개발 반영을 금지한다.
+
+## 현재 진행 체크리스트
+- [x] S1-01 MVP 기능 목록 확정
+- [x] S1-02 제외(R&D) 목록 확정
+- [x] S2-01 NFR 목표 수치 정합성 반영
+- [x] S3-01 Scope Change Log 문서/운영 규칙 정의

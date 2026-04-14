@@ -15,3 +15,6 @@
 ## 장애 대응
 - 일정 시간 무수신 시 stale 상태 표시
 - 재수신 시 서버 스냅샷으로 정합성 복구
+- 구현 기준: `SyncPolicy`, `SyncInterpolator`
+- 단절 시 짧은 예측 이동은 `PredictionPolicy.maxPredictMs` 범위 내에서만 허용한다.
+- 재입장 복구는 room snapshot에서 동일 uid 상태를 우선 복원한다.

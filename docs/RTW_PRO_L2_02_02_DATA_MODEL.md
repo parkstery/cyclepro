@@ -17,3 +17,5 @@
 ## 규칙
 - 상태값은 enum으로 제한한다.
 - 서버 시각 필드를 기준으로 정렬한다.
+- `RoomStatus`, `ParticipantState`는 미정의 문자열을 허용하지 않는다.
+- `createdAt`, `startAt`, `lastSeenAt`, `updatedAt`는 epoch millis 기준으로 통일한다.

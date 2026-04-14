@@ -14,3 +14,4 @@
 ## 규칙
 - 미지원 기기는 안내 후 가상 입력 모드 전환
 - 권한 거부 시 센서 기능 비활성 처리
+- 구현 경계: `SensorGateway`, `SensorConnectionCoordinator`
