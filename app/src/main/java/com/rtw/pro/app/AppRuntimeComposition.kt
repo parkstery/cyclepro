@@ -2,6 +2,7 @@ package com.rtw.pro.app
 
 import android.content.Context
 import android.content.Intent
+import com.rtw.pro.BuildConfig
 import com.rtw.pro.app.runtime.AppRuntimeOrchestrator
 import com.rtw.pro.app.runtime.MainAppStartupHandler
 import com.rtw.pro.app.runtime.PushTokenRefreshHandler
@@ -35,8 +36,8 @@ object AppRuntimeComposition {
     private val googleSignInBridge by lazy { AndroidGoogleSignInBridgeImpl() }
     private val firebaseAuthBridge by lazy { AndroidFirebaseAuthBridgeImpl() }
     private fun authConfig(): AuthProviderConfig = AuthProviderConfig(
-        googleWebClientId = "TODO_WEB_CLIENT_ID",
-        firebaseProjectId = "TODO_FIREBASE_PROJECT_ID"
+        googleWebClientId = BuildConfig.AUTH_WEB_CLIENT_ID,
+        firebaseProjectId = BuildConfig.AUTH_FIREBASE_PROJECT_ID
     )
 
     fun provideAuthGateway(): FirebaseAuthGateway {
