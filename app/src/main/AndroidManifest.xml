@@ -8,6 +8,9 @@
         android:label="RTW Pro"
         android:supportsRtl="true"
         android:theme="@style/Theme.RTWPro">
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${MAPS_API_KEY}" />
 
         <activity
             android:name="com.rtw.pro.MainActivity"
