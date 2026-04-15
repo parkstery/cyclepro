@@ -9,7 +9,9 @@ import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.GoogleAuthProvider
+import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 
 /**
  * Runtime-oriented implementation skeleton.
@@ -159,13 +161,32 @@ class AndroidFirebaseAuthBridgeImpl : AndroidFirebaseAuthBridge {
     }
 
     private fun extractFirebaseErrorCode(exception: Exception): String {
-        if (exception is FirebaseAuthException && !exception.errorCode.isNullOrBlank()) {
-            return exception.errorCode
+        var cursor: Throwable? = exception
+        while (cursor != null) {
+            if (cursor is FirebaseAuthException && !cursor.errorCode.isNullOrBlank()) {
+                return cursor.errorCode
+            }
+            cursor = cursor.cause
         }
-        val cause = exception.cause
-        if (cause is FirebaseAuthException && !cause.errorCode.isNullOrBlank()) {
-            return cause.errorCode
+
+        if (exception is TimeoutException) {
+            return "ERROR_TIMEOUT"
         }
-        return "ERROR_UNKNOWN"
+        if (exception is ExecutionException && exception.cause is TimeoutException) {
+            return "ERROR_TIMEOUT"
+        }
+
+        val message = exception.stackTraceToString().uppercase()
+        return when {
+            "INVALID_CREDENTIAL" in message -> "ERROR_INVALID_CREDENTIAL"
+            "INVALID_IDP_RESPONSE" in message -> "ERROR_INVALID_IDP_RESPONSE"
+            "NETWORK_REQUEST_FAILED" in message -> "ERROR_NETWORK_REQUEST_FAILED"
+            "TOO_MANY_REQUESTS" in message -> "ERROR_TOO_MANY_REQUESTS"
+            "USER_DISABLED" in message -> "ERROR_USER_DISABLED"
+            "USER_TOKEN_EXPIRED" in message -> "ERROR_USER_TOKEN_EXPIRED"
+            "CREDENTIAL_TOO_OLD_LOGIN_AGAIN" in message -> "ERROR_CREDENTIAL_TOO_OLD_LOGIN_AGAIN"
+            "TIMEOUT" in message -> "ERROR_TIMEOUT"
+            else -> "ERROR_UNKNOWN"
+        }
     }
 }
