@@ -2,6 +2,7 @@ package com.rtw.pro.foundation.data.auth
 
 import com.rtw.pro.foundation.domain.auth.AuthGateway
 import com.rtw.pro.foundation.domain.auth.AuthResult
+import com.rtw.pro.foundation.domain.auth.AuthUiMessagePolicy
 
 enum class AuthRuntimeStatus {
     READY_WITH_SESSION,
@@ -20,6 +21,13 @@ class AuthRuntimeCoordinator(
     private val config: AuthProviderConfig,
     private val authGateway: AuthGateway
 ) {
+    private fun failureResult(error: com.rtw.pro.foundation.domain.auth.AuthError): AuthRuntimeResult {
+        return AuthRuntimeResult(
+            status = AuthRuntimeStatus.FAILED_SIGN_IN,
+            message = AuthUiMessagePolicy.messageFor(error)
+        )
+    }
+
     fun initialize(): AuthRuntimeResult {
         if (!config.isValid()) {
             return AuthRuntimeResult(
@@ -34,15 +42,12 @@ class AuthRuntimeCoordinator(
                 message = "Auth ready with cached session"
             )
         }
-        return when (authGateway.signInWithGoogle()) {
+        return when (val signIn = authGateway.signInWithGoogle()) {
             is AuthResult.Success -> AuthRuntimeResult(
                 status = AuthRuntimeStatus.READY_AFTER_SIGN_IN,
                 message = "Auth ready after Google sign-in"
             )
-            is AuthResult.Failure -> AuthRuntimeResult(
-                status = AuthRuntimeStatus.FAILED_SIGN_IN,
-                message = "Auth sign-in failed"
-            )
+            is AuthResult.Failure -> failureResult(signIn.error)
         }
     }
 
@@ -53,15 +58,12 @@ class AuthRuntimeCoordinator(
                 message = "Auth provider config is invalid"
             )
         }
-        return when (authGateway.signInWithGoogle()) {
+        return when (val signIn = authGateway.signInWithGoogle()) {
             is AuthResult.Success -> AuthRuntimeResult(
                 status = AuthRuntimeStatus.READY_AFTER_SIGN_IN,
                 message = "Auth ready after retry sign-in"
             )
-            is AuthResult.Failure -> AuthRuntimeResult(
-                status = AuthRuntimeStatus.FAILED_SIGN_IN,
-                message = "Auth retry sign-in failed"
-            )
+            is AuthResult.Failure -> failureResult(signIn.error)
         }
     }
 
