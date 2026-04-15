@@ -20,7 +20,8 @@ class MainActivity : AppCompatActivity() {
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         AppRuntimeComposition.dispatchGoogleSignInActivityResult(result.data)
-        renderRuntimeState()
+        currentState = runtimeOrchestrator.retryAuthSignIn()
+        renderCurrentState()
     }
     private val locationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
