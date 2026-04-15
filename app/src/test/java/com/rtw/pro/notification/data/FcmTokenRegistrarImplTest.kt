@@ -38,4 +38,21 @@ class FcmTokenRegistrarImplTest {
         assertTrue(result.success)
         assertEquals(null, result.errorCode)
     }
+
+    @Test
+    fun registerDetailed_succeedsLocally_whenNoBackendAndTokenPresent() {
+        val registrar = FcmTokenRegistrarImpl()
+        val result = registrar.registerDetailed("fcm-token-local")
+        assertTrue(result.success)
+        assertEquals(null, result.errorCode)
+        assertEquals("fcm-token-local", result.token)
+    }
+
+    @Test
+    fun registerDetailed_failsLocally_whenNoBackendAndTokenBlank() {
+        val registrar = FcmTokenRegistrarImpl()
+        val result = registrar.registerDetailed("   ")
+        assertEquals(false, result.success)
+        assertEquals(FcmErrorCode.TOKEN_UNAVAILABLE, result.errorCode)
+    }
 }
