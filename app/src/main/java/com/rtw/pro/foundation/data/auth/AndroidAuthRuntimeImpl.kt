@@ -185,6 +185,7 @@ class AndroidFirebaseAuthBridgeImpl : AndroidFirebaseAuthBridge {
 
         val message = exception.stackTraceToString().uppercase()
         return when {
+            "CONFIGURATION_NOT_FOUND" in message -> "ERROR_CONFIGURATION_NOT_FOUND"
             "INVALID_CREDENTIAL" in message -> "ERROR_INVALID_CREDENTIAL"
             "INVALID_IDP_RESPONSE" in message -> "ERROR_INVALID_IDP_RESPONSE"
             "NETWORK_REQUEST_FAILED" in message -> "ERROR_NETWORK_REQUEST_FAILED"

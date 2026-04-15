@@ -6,6 +6,7 @@ import com.rtw.pro.foundation.domain.auth.AuthResult
 import com.rtw.pro.foundation.domain.auth.AuthSession
 
 enum class FirebaseSignInErrorCode {
+    APP_NOT_CONFIGURED,
     INVALID_GOOGLE_TOKEN,
     NETWORK_ERROR,
     USER_DISABLED,
@@ -54,6 +55,9 @@ class FirebaseAuthGateway(
         val signed = firebaseAuthClient.signInWithGoogleIdTokenDetailed(idToken)
         if (!signed.success) {
             return when (signed.errorCode) {
+                FirebaseSignInErrorCode.APP_NOT_CONFIGURED -> {
+                    AuthResult.Failure(AuthError.Unknown("app-not-configured"))
+                }
                 FirebaseSignInErrorCode.TOKEN_EXPIRED -> AuthResult.Failure(AuthError.TokenExpired)
                 FirebaseSignInErrorCode.NETWORK_ERROR -> AuthResult.Failure(AuthError.Unknown("network-error"))
                 FirebaseSignInErrorCode.INVALID_GOOGLE_TOKEN -> AuthResult.Failure(AuthError.Unknown("invalid-google-token"))

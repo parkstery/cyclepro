@@ -7,6 +7,8 @@ object FirebaseAuthErrorMapper {
      */
     fun fromFirebaseErrorCode(errorCode: String?): FirebaseSignInErrorCode {
         return when (errorCode?.uppercase()) {
+            "ERROR_APP_NOT_CONFIGURED",
+            "ERROR_CONFIGURATION_NOT_FOUND" -> FirebaseSignInErrorCode.APP_NOT_CONFIGURED
             "ERROR_INVALID_CREDENTIAL",
             "ERROR_INVALID_IDP_RESPONSE" -> FirebaseSignInErrorCode.INVALID_GOOGLE_TOKEN
             "ERROR_NETWORK_REQUEST_FAILED",

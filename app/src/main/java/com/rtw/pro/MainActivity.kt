@@ -163,6 +163,8 @@ class MainActivity : AppCompatActivity() {
         val nextAction = when {
             currentState.mapErrorCode?.name == "LOCATION_PERMISSION_DENIED" ->
                 "Tap Request Location Permission and allow access."
+            currentState.authMessage.contains("CONFIGURATION_NOT_FOUND", ignoreCase = true) ->
+                "Replace google-services.json and local.properties auth values from the same Firebase project."
             !BuildConfig.HAS_GOOGLE_SERVICES_JSON -> "Place app/google-services.json from Firebase console."
             !authConfigLooksReal -> "Set rtw.auth.webClientId and rtw.auth.firebaseProjectId in local.properties."
             else -> "Run Google Sign-In button and verify authReady=true."
