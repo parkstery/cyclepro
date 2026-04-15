@@ -12,8 +12,14 @@ object AuthUiMessagePolicy {
                     "user-disabled" -> "계정 사용이 제한되었습니다. 고객센터에 문의해 주세요."
                     else -> {
                         if (error.message.startsWith("firebase-sign-in-failed:")) {
-                            val raw = error.message.substringAfter("firebase-sign-in-failed:")
-                            "로그인에 실패했습니다. Firebase 코드: $raw"
+                            val payload = error.message.removePrefix("firebase-sign-in-failed:")
+                            val raw = payload.substringBefore(":")
+                            val detail = payload.substringAfter(":", missingDelimiterValue = "none")
+                            if (detail == "none") {
+                                "로그인에 실패했습니다. Firebase 코드: $raw"
+                            } else {
+                                "로그인에 실패했습니다. Firebase 코드: $raw / 상세: $detail"
+                            }
                         } else {
                             "로그인에 실패했습니다. 잠시 후 다시 시도해 주세요."
                         }

@@ -102,6 +102,7 @@ class AndroidFirebaseAuthBridgeImpl : AndroidFirebaseAuthBridge {
         }
     }
     private var lastFirebaseErrorCode: String? = null
+    private var lastFirebaseErrorDetail: String? = null
 
     override fun currentUid(): String? {
         val auth = authOrNull ?: return null
@@ -123,10 +124,12 @@ class AndroidFirebaseAuthBridgeImpl : AndroidFirebaseAuthBridge {
         val auth = authOrNull
         if (auth == null) {
             lastFirebaseErrorCode = "ERROR_APP_NOT_CONFIGURED"
+            lastFirebaseErrorDetail = "FirebaseAuth.getInstance failed: app not configured"
             return false
         }
         if (idToken.isBlank()) {
             lastFirebaseErrorCode = "ERROR_INVALID_CREDENTIAL"
+            lastFirebaseErrorDetail = "Google ID token is blank"
             return false
         }
         return try {
@@ -134,9 +137,11 @@ class AndroidFirebaseAuthBridgeImpl : AndroidFirebaseAuthBridge {
             val task = auth.signInWithCredential(credential)
             Tasks.await(task, 10, TimeUnit.SECONDS)
             lastFirebaseErrorCode = null
+            lastFirebaseErrorDetail = null
             task.isSuccessful
         } catch (e: Exception) {
             lastFirebaseErrorCode = extractFirebaseErrorCode(e)
+            lastFirebaseErrorDetail = extractFirebaseErrorDetail(e)
             false
         }
     }
@@ -149,7 +154,8 @@ class AndroidFirebaseAuthBridgeImpl : AndroidFirebaseAuthBridge {
             FirebaseSignInResult(
                 success = false,
                 errorCode = FirebaseAuthErrorMapper.fromFirebaseErrorCode(lastFirebaseErrorCode),
-                rawErrorCode = lastFirebaseErrorCode
+                rawErrorCode = lastFirebaseErrorCode,
+                rawErrorDetail = lastFirebaseErrorDetail
             )
         }
     }
@@ -158,6 +164,7 @@ class AndroidFirebaseAuthBridgeImpl : AndroidFirebaseAuthBridge {
         val auth = authOrNull ?: return
         auth.signOut()
         lastFirebaseErrorCode = null
+        lastFirebaseErrorDetail = null
     }
 
     private fun extractFirebaseErrorCode(exception: Exception): String {
@@ -188,5 +195,17 @@ class AndroidFirebaseAuthBridgeImpl : AndroidFirebaseAuthBridge {
             "TIMEOUT" in message -> "ERROR_TIMEOUT"
             else -> "ERROR_UNKNOWN"
         }
+    }
+
+    private fun extractFirebaseErrorDetail(exception: Exception): String {
+        val chain = mutableListOf<String>()
+        var cursor: Throwable? = exception
+        while (cursor != null && chain.size < 4) {
+            val simpleName = cursor::class.java.simpleName
+            val message = cursor.message?.replace("\n", " ")?.take(160) ?: "(no-message)"
+            chain += "$simpleName:$message"
+            cursor = cursor.cause
+        }
+        return chain.joinToString(" -> ")
     }
 }

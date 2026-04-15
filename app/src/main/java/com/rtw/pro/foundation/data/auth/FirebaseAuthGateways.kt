@@ -16,7 +16,8 @@ enum class FirebaseSignInErrorCode {
 data class FirebaseSignInResult(
     val success: Boolean,
     val errorCode: FirebaseSignInErrorCode? = null,
-    val rawErrorCode: String? = null
+    val rawErrorCode: String? = null,
+    val rawErrorDetail: String? = null
 )
 
 interface FirebaseAuthClient {
@@ -59,7 +60,8 @@ class FirebaseAuthGateway(
                 FirebaseSignInErrorCode.USER_DISABLED -> AuthResult.Failure(AuthError.Unknown("user-disabled"))
                 FirebaseSignInErrorCode.UNKNOWN, null -> {
                     val raw = signed.rawErrorCode ?: "unknown"
-                    AuthResult.Failure(AuthError.Unknown("firebase-sign-in-failed:$raw"))
+                    val detail = signed.rawErrorDetail?.replace(":", "=")?.replace("\n", " ") ?: "none"
+                    AuthResult.Failure(AuthError.Unknown("firebase-sign-in-failed:$raw:$detail"))
                 }
             }
         }
