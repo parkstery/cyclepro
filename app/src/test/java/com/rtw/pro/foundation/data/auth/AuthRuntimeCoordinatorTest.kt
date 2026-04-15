@@ -37,6 +37,16 @@ class AuthRuntimeCoordinatorTest {
         assertEquals(AuthRuntimeStatus.BLOCKED_BY_INVALID_CONFIG, result.status)
     }
 
+    @Test
+    fun initialize_returnsSignedOut_whenNoCachedSessionExists() {
+        val coordinator = AuthRuntimeCoordinator(
+            config = AuthProviderConfig("web", "project"),
+            authGateway = fakeGateway(session = null)
+        )
+        val result = coordinator.initialize()
+        assertEquals(AuthRuntimeStatus.SIGNED_OUT, result.status)
+    }
+
     private fun fakeGateway(
         session: AuthSession? = null
     ): AuthGateway = object : AuthGateway {

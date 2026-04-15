@@ -42,13 +42,10 @@ class AuthRuntimeCoordinator(
                 message = "Auth ready with cached session"
             )
         }
-        return when (val signIn = authGateway.signInWithGoogle()) {
-            is AuthResult.Success -> AuthRuntimeResult(
-                status = AuthRuntimeStatus.READY_AFTER_SIGN_IN,
-                message = "Auth ready after Google sign-in"
-            )
-            is AuthResult.Failure -> failureResult(signIn.error)
-        }
+        return AuthRuntimeResult(
+            status = AuthRuntimeStatus.SIGNED_OUT,
+            message = "No cached auth session. Sign in is required."
+        )
     }
 
     fun retrySignIn(): AuthRuntimeResult {
