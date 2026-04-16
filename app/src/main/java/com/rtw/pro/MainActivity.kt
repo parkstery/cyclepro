@@ -43,8 +43,7 @@ class MainActivity : AppCompatActivity() {
         val retryPushTokenButton = Button(this).apply {
             text = "Retry Push Token Sync"
             setOnClickListener {
-                currentState = runtimeOrchestrator.retryPushTokenSync()
-                renderCurrentState()
+                retryPushTokenSyncAsync()
             }
         }
         val retryAuthButton = Button(this).apply {
@@ -74,8 +73,7 @@ class MainActivity : AppCompatActivity() {
         val subscribeTopicButton = Button(this).apply {
             text = "Subscribe Topic: daily-20h"
             setOnClickListener {
-                currentState = runtimeOrchestrator.subscribeEventTopic("daily-20h")
-                renderCurrentState()
+                subscribeTopicAsync("daily-20h")
             }
         }
         val requestLocationPermissionButton = Button(this).apply {
@@ -135,6 +133,26 @@ class MainActivity : AppCompatActivity() {
     private fun retryAuthSignInAsync() {
         Thread {
             val nextState = runtimeOrchestrator.retryAuthSignIn()
+            runOnUiThread {
+                currentState = nextState
+                renderCurrentState()
+            }
+        }.start()
+    }
+
+    private fun retryPushTokenSyncAsync() {
+        Thread {
+            val nextState = runtimeOrchestrator.retryPushTokenSync()
+            runOnUiThread {
+                currentState = nextState
+                renderCurrentState()
+            }
+        }.start()
+    }
+
+    private fun subscribeTopicAsync(topic: String) {
+        Thread {
+            val nextState = runtimeOrchestrator.subscribeEventTopic(topic)
             runOnUiThread {
                 currentState = nextState
                 renderCurrentState()
