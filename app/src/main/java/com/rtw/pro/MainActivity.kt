@@ -15,12 +15,14 @@ import com.rtw.pro.app.runtime.RuntimeState
 import com.rtw.pro.notification.domain.PushMessage
 import com.rtw.pro.notification.data.LocalNotificationSender
 import androidx.core.content.ContextCompat
+import com.rtw.pro.roomrace.domain.RoomRaceStateMachine
 
 class MainActivity : AppCompatActivity() {
     private lateinit var dashboardText: TextView
     private val runtimeOrchestrator by lazy { AppRuntimeComposition.provideAppRuntimeOrchestrator(applicationContext) }
     private var currentState: RuntimeState = RuntimeState()
     private var hasLaunchedRuntime: Boolean = false
+    private val raceStateMachine = RoomRaceStateMachine(initialState = com.rtw.pro.roomrace.domain.RoomRaceState.RUNNING)
     private val googleSignInLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -87,6 +89,13 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        val simulateRaceEndButton = Button(this).apply {
+            text = "Simulate Race End -> Notify"
+            setOnClickListener {
+                simulateRaceEndAsync()
+            }
+        }
+
         val sendPushSmokeTestButton = Button(this).apply {
             text = "Send Test Push (fallback): daily-20h"
             setOnClickListener {
@@ -117,6 +126,7 @@ class MainActivity : AppCompatActivity() {
             addView(signOutButton)
             addView(googleSignInButton)
             addView(subscribeTopicButton)
+            addView(simulateRaceEndButton)
             addView(sendPushSmokeTestButton)
             addView(requestLocationPermissionButton)
             addView(dashboardText)
@@ -223,6 +233,35 @@ class MainActivity : AppCompatActivity() {
                 currentState = currentState.copy(
                     pushSendAttempted = true,
                     pushSendSuccess = serverOk || localOk,
+                    pushSendMessage = msg
+                )
+                renderCurrentState()
+            }
+        }.start()
+    }
+
+    private fun simulateRaceEndAsync() {
+        Thread {
+            val nextRaceState = runCatching { raceStateMachine.onRaceEnded() }.getOrNull()
+            // Ensure topic is subscribed (best-effort)
+            val afterTopic = runtimeOrchestrator.subscribeEventTopic("daily-20h")
+            val localOk = LocalNotificationSender.trySend(
+                context = this@MainActivity,
+                title = "RTW Pro(카) 레이스 종료",
+                body = "레이스가 종료되었습니다. 결과를 확인해 주세요."
+            )
+            val msg = buildString {
+                append("RaceEnd=")
+                append(nextRaceState?.name ?: "IGNORED")
+                append(" / topicSubscribed=")
+                append(afterTopic.pushTopicSubscribed)
+                append(" / localNoti=")
+                append(if (localOk) "OK" else "FAIL")
+            }
+            runOnUiThread {
+                currentState = afterTopic.copy(
+                    pushSendAttempted = true,
+                    pushSendSuccess = localOk,
                     pushSendMessage = msg
                 )
                 renderCurrentState()
