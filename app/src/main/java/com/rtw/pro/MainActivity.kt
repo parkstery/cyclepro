@@ -8,10 +8,13 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import android.Manifest
+import android.content.pm.PackageManager
 import com.liveonsoft.cyclepro.BuildConfig
 import com.rtw.pro.app.AppRuntimeComposition
 import com.rtw.pro.app.runtime.RuntimeState
 import com.rtw.pro.notification.domain.PushMessage
+import com.rtw.pro.notification.data.LocalNotificationSender
+import androidx.core.content.ContextCompat
 
 class MainActivity : AppCompatActivity() {
     private lateinit var dashboardText: TextView
@@ -28,6 +31,12 @@ class MainActivity : AppCompatActivity() {
         ActivityResultContracts.RequestMultiplePermissions()
     ) {
         refreshMapAndPushState()
+    }
+
+    private val notificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) {
+        renderCurrentState()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -114,7 +123,19 @@ class MainActivity : AppCompatActivity() {
         }
         setContentView(ScrollView(this).apply { addView(layout) })
 
+        maybeRequestNotificationPermission()
         renderRuntimeState()
+    }
+
+    private fun maybeRequestNotificationPermission() {
+        if (android.os.Build.VERSION.SDK_INT < 33) return
+        val granted = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.POST_NOTIFICATIONS
+        ) == PackageManager.PERMISSION_GRANTED
+        if (!granted) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
     }
 
     private fun renderRuntimeState() {
@@ -180,22 +201,28 @@ class MainActivity : AppCompatActivity() {
     ) {
         Thread {
             val pushNotifier = AppRuntimeComposition.providePushNotifier()
-            val ok = pushNotifier.send(
+            val serverOk = pushNotifier.send(
                 message = PushMessage(
                     topic = topic,
                     title = title,
                     body = body
                 )
             )
-            val msg = if (ok) {
-                "알림 전송이 완료되었습니다.(스모크)"
-            } else {
-                "서버 발송이 아직 미구현입니다. 폴백 상태로만 스모크를 완료합니다."
+            val localOk = LocalNotificationSender.trySend(
+                context = this@MainActivity,
+                title = "RTW Pro(카) 알림",
+                body = body
+            )
+            val msg = when {
+                serverOk && localOk -> "서버 발송 완료 + 로컬 알림 표시.(스모크)"
+                serverOk && !localOk -> "서버 발송 완료(로컬 알림은 권한/환경 문제로 실패)."
+                !serverOk && localOk -> "서버 발송 미구현. 로컬 알림 폴백으로 스모크 완료."
+                else -> "서버 발송 미구현 + 로컬 알림도 실패(알림 권한 확인 필요)."
             }
             runOnUiThread {
                 currentState = currentState.copy(
                     pushSendAttempted = true,
-                    pushSendSuccess = ok,
+                    pushSendSuccess = serverOk || localOk,
                     pushSendMessage = msg
                 )
                 renderCurrentState()
