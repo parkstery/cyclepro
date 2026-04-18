@@ -34,6 +34,8 @@
   - `{"ok": false, "errorCode": "UNAUTHORIZED"}`
   - `{"ok": false, "errorCode": "INVALID_TOKEN"}`
   - `{"ok": false, "errorCode": "INVALID_BODY"}`
+  - `{"ok": false, "errorCode": "TOPIC_NOT_ALLOWED"}`
+  - `{"ok": false, "errorCode": "RATE_LIMITED"}`
 
 ## Setup
 1. Install dependencies
@@ -43,9 +45,15 @@
    - Update `.firebaserc` default project id
 3. Set secret for dev-key testing
    - `firebase functions:secrets:set RTW_PUSH_DEV_KEY`
-4. Build and deploy
+4. (Optional) Restrict allowed topics (comma-separated)
+   - Set deploy/runtime env var `RTW_ALLOWED_TOPICS` (example: `daily-20h,test`)
+5. Build and deploy
    - `npm run build`
    - `firebase deploy --only functions`
+
+## Guardrails
+- Allowed topics default: `daily-20h,test`
+- Rate limit: max 5 requests / 60s per actor (Firebase UID or `dev-key`)
 
 ## Curl test with dev key
 ```bash

@@ -16,6 +16,20 @@ type PushBody = {
 };
 
 const RTW_PUSH_DEV_KEY = defineSecret("RTW_PUSH_DEV_KEY");
+const DEFAULT_ALLOWED_TOPICS = ["daily-20h", "test"];
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX_REQUESTS = 5;
+const requestTimestampsByActor = new Map<string, number[]>();
+
+function resolveAllowedTopics(): Set<string> {
+  const raw = process.env.RTW_ALLOWED_TOPICS?.trim() ?? "";
+  if (!raw) return new Set(DEFAULT_ALLOWED_TOPICS);
+  const items = raw
+    .split(",")
+    .map((it) => it.trim())
+    .filter((it) => it.length > 0);
+  return new Set(items.length > 0 ? items : DEFAULT_ALLOWED_TOPICS);
+}
 
 function isDevKeyAuthorized(
   req: { get(name: string): string | undefined },
@@ -36,6 +50,14 @@ function normalizeData(raw: unknown): Record<string, string> | undefined {
     out[k] = typeof v === "string" ? v : JSON.stringify(v);
   }
   return Object.keys(out).length ? out : undefined;
+}
+
+function isRateLimited(actorId: string, nowMs: number): boolean {
+  const current = requestTimestampsByActor.get(actorId) ?? [];
+  const pruned = current.filter((ts) => nowMs - ts <= RATE_LIMIT_WINDOW_MS);
+  pruned.push(nowMs);
+  requestTimestampsByActor.set(actorId, pruned);
+  return pruned.length > RATE_LIMIT_MAX_REQUESTS;
 }
 
 export const sendTopicPush = onRequest(
@@ -62,7 +84,12 @@ export const sendTopicPush = onRequest(
 
     if (bearer?.[1]) {
       try {
-        await admin.auth().verifyIdToken(bearer[1]);
+        const decoded = await admin.auth().verifyIdToken(bearer[1]);
+        const actorId = decoded.uid || "firebase-user";
+        if (isRateLimited(actorId, Date.now())) {
+          res.status(429).json({ok: false, errorCode: "RATE_LIMITED"});
+          return;
+        }
       } catch (e) {
         logger.warn("verifyIdToken failed", e);
         if (!hasDevKeyAuth) {
@@ -70,6 +97,9 @@ export const sendTopicPush = onRequest(
           return;
         }
       }
+    } else if (hasDevKeyAuth && isRateLimited("dev-key", Date.now())) {
+      res.status(429).json({ok: false, errorCode: "RATE_LIMITED"});
+      return;
     }
 
     const b = req.body as PushBody;
@@ -82,6 +112,11 @@ export const sendTopicPush = onRequest(
     }
     if (!TOPIC_PATTERN.test(topic)) {
       res.status(400).json({ok: false, errorCode: "INVALID_TOPIC"});
+      return;
+    }
+    const allowedTopics = resolveAllowedTopics();
+    if (!allowedTopics.has(topic)) {
+      res.status(403).json({ok: false, errorCode: "TOPIC_NOT_ALLOWED"});
       return;
     }
 
