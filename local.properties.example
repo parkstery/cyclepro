@@ -1,0 +1,14 @@
+# Copy this file to local.properties (same folder as settings.gradle.kts) and fill in values.
+# Never commit local.properties (it is gitignored).
+
+sdk.dir=
+
+# Firebase / Google Sign-In (Web client OAuth ID from Firebase console)
+rtw.auth.webClientId=
+rtw.auth.firebaseProjectId=
+
+# Google Maps SDK (restricted key recommended)
+rtw.map.apiKey=
+
+# Optional: HTTPS URL of sendTopicPush Cloud Function (see functions/README.md)
+rtw.push.topicSendUrl=
