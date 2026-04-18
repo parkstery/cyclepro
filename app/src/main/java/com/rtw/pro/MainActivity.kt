@@ -5,6 +5,9 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
 import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import android.Manifest
@@ -23,6 +26,7 @@ class MainActivity : AppCompatActivity() {
     private val runtimeOrchestrator by lazy { AppRuntimeComposition.provideAppRuntimeOrchestrator(applicationContext) }
     private var currentState: RuntimeState = RuntimeState()
     private var hasLaunchedRuntime: Boolean = false
+    private val prefs by lazy { getSharedPreferences("rtw.runtime", MODE_PRIVATE) }
     private val googleSignInLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -109,12 +113,7 @@ class MainActivity : AppCompatActivity() {
         val requestLocationPermissionButton = Button(this).apply {
             text = "Request Location Permission"
             setOnClickListener {
-                locationPermissionLauncher.launch(
-                    arrayOf(
-                        Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION
-                    )
-                )
+                requestLocationPermissionOrOpenSettings()
             }
         }
         val layout = LinearLayout(this).apply {
@@ -172,6 +171,50 @@ class MainActivity : AppCompatActivity() {
             streetViewConfig = AppRuntimeComposition.defaultStreetViewConfig()
         )
         renderCurrentState()
+    }
+
+    private fun requestLocationPermissionOrOpenSettings() {
+        val fineGranted = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+        val coarseGranted = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+        if (fineGranted || coarseGranted) {
+            // No permission dialog will appear when already granted; refresh state immediately.
+            refreshMapAndPushState()
+            return
+        }
+
+        val requestedBefore = prefs.getBoolean("asked_location_permission", false)
+        val canAskAgain = shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION) ||
+            shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION)
+
+        if (requestedBefore && !canAskAgain) {
+            // Permanently denied ("Don't ask again") → open app settings.
+            openAppSettings()
+            return
+        }
+
+        prefs.edit().putBoolean("asked_location_permission", true).apply()
+        locationPermissionLauncher.launch(
+            arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            )
+        )
+    }
+
+    private fun openAppSettings() {
+        val intent = Intent(
+            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+            Uri.fromParts("package", packageName, null)
+        ).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        startActivity(intent)
     }
 
     private fun retryAuthSignInAsync() {

@@ -1,0 +1,18 @@
+.gradle/
+**/build/
+local.properties
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+*.ipr
+*.iws
+.externalNativeBuild/
+.cxx/
+
+# Firebase local
+app/google-services.json
+
+# OS
+Thumbs.db
+Desktop.ini
